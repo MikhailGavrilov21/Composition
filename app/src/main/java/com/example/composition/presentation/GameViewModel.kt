@@ -21,6 +21,13 @@ class GameViewModel(
 
     private lateinit var gameSettings: GameSettings
 
+    private val repository = GameRepositoryImpl
+
+    private val generateQuestionUseCase = GenerateQuestionUseCase(repository)
+    private val getGameSettingsUseCase = GetGameSettingsUseCase(repository)
+
+    private var timer: CountDownTimer? = null
+
     private val _formattedTime = MutableLiveData<String>()
     val formattedTime: LiveData<String>
         get() = _formattedTime
@@ -32,6 +39,10 @@ class GameViewModel(
     private val _percentOfRightAnswers = MutableLiveData<Int>()
     val percentOfRightAnswers: LiveData<Int>
         get() = _percentOfRightAnswers
+
+    private val _progressAnswers = MutableLiveData<String>()
+    val progressAnswers: LiveData<String>
+        get() = _progressAnswers
 
     private val _enoughCount = MutableLiveData<Boolean>()
     val enoughCount: LiveData<Boolean>
@@ -45,24 +56,12 @@ class GameViewModel(
     val minPercent: LiveData<Int>
         get() = _minPercent
 
-    private val _progressAnswers = MutableLiveData<String>()
-    val progressAnswers: LiveData<String>
-        get() = _progressAnswers
-
     private val _gameResult = MutableLiveData<GameResult>()
     val gameResult: LiveData<GameResult>
         get() = _gameResult
 
     private var countOfRightAnswers = 0
     private var countOfQuestions = 0
-
-
-    private val repository = GameRepositoryImpl
-
-    private val generateQuestionUseCase = GenerateQuestionUseCase(repository)
-    private val getGameSettingsUseCase = GetGameSettingsUseCase(repository)
-
-    private var timer: CountDownTimer? = null
 
     init {
         startGame()
@@ -79,7 +78,6 @@ class GameViewModel(
         checkAnswer(number)
         updateProgress()
         generateQuestion()
-        updateProgress()
     }
 
     private fun updateProgress() {
@@ -98,7 +96,7 @@ class GameViewModel(
         if (countOfQuestions == 0) {
             return 0
         }
-        return (countOfRightAnswers / countOfQuestions.toDouble() * 100).toInt()
+        return ((countOfRightAnswers / countOfQuestions.toDouble()) * 100).toInt()
     }
 
     private fun checkAnswer(number: Int) {
@@ -143,7 +141,7 @@ class GameViewModel(
 
     private fun finishGame() {
         _gameResult.value = GameResult(
-            enoughPercent.value == true && enoughCount.value == true,
+            enoughCount.value == true && enoughPercent.value == true,
             countOfRightAnswers,
             countOfQuestions,
             gameSettings
@@ -156,6 +154,7 @@ class GameViewModel(
     }
 
     companion object {
+
         private const val MILLIS_IN_SECONDS = 1000L
         private const val SECONDS_IN_MINUTES = 60
     }
